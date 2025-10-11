@@ -1,12 +1,17 @@
+// Dizeleri standart bir formata dönüştürür (küçük harfe çevirme gibi).
+// Bu, arama ve eşleştirme işlemlerinin daha tutarlı olmasını sağlar.
 function normalizeString(str) {
     if (!str) return '';
     return str.toLowerCase();
 }
 
+// Uygulamanın genel durumunu tutan değişkenler.
 let allWords = [];
 let lastSelectedWord = null;
 let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+let isCyrillic = false; // Alfabenin başlangıç durumu (Latin)
 
+// Google Sheets'ten verileri çeker.
 async function fetchWords() {
     const sheetId = '1R01aIajx6dzHlO-KBiUXUmld2AEvxjCQkUTFGYB3EDM';
     const sheetName = 'Sözlük';
@@ -16,7 +21,8 @@ async function fetchWords() {
         const response = await fetch(url);
         allWords = await response.json();
         setupSearch();
-        showPage('home');
+        setupAlphabetToggle(); // Yeni eklenen alfabe tuşunu kurar
+        showPage('home'); // Sayfa yüklendiğinde ana sayfayı gösterir.
     } catch (error) {
         console.error('VERİ ÇEKME HATASI:', error);
         document.getElementById('result').innerHTML =
@@ -24,6 +30,7 @@ async function fetchWords() {
     }
 }
 
+// Hangi sayfanın (ana sayfa veya hakkında) görüntüleneceğini kontrol eder.
 function showPage(pageId) {
     const homeContent = document.getElementById('home-content');
     const aboutContent = document.getElementById('about-content');
@@ -42,14 +49,16 @@ function showPage(pageId) {
     }
 }
 
-
+// Arama kutusu ve önerilerle ilgili olay dinleyicilerini kurar.
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     const suggestionsDiv = document.getElementById('suggestions');
     const resultDiv = document.getElementById('result');
 
+    // Sayfa yüklendiğinde geçmiş aramaları gösterir.
     displaySearchHistory();
 
+    // Kullanıcı arama kutusuna yazı yazdığında çalışır.
     searchInput.addEventListener('input', function () {
         const rawQuery = this.value.trim();
         const query = normalizeString(rawQuery);
@@ -83,10 +92,12 @@ function setupSearch() {
         displaySuggestions(matches, query);
     });
 
+    // Arama kutusuna odaklanıldığında geçmişi gösterir.
     searchInput.addEventListener('focus', () => {
         if (!searchInput.value.trim()) displaySearchHistory();
     });
 
+    // Enter tuşuna basıldığında ilk öneriyi seçer.
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const firstSuggestion = suggestionsDiv.querySelector('.suggestion');
@@ -94,11 +105,35 @@ function setupSearch() {
         }
     });
 
+    // Eğer daha önce bir kelime seçilmişse, sonucu gösterir.
     if (lastSelectedWord) {
         showResult(lastSelectedWord);
     }
 }
 
+// Alfabe değiştirme tuşu için olay dinleyicilerini kurar.
+function setupAlphabetToggle() {
+    const toggleButton = document.getElementById('alphabet-toggle');
+    toggleButton.addEventListener('click', toggleAlphabet);
+}
+
+// Harfleri değiştirme fonksiyonu
+// NOT: Bu fonksiyon, harf eşleştirmelerinizi beklemektedir.
+// Karşılıkları gönderdiğinizde bu fonksiyonu tamamlayabilirim.
+function toggleAlphabet() {
+    isCyrillic = !isCyrillic;
+    
+    // Simgeyi değiştirir
+    document.getElementById('alphabet-toggle-latin').classList.toggle('hidden', isCyrillic);
+    document.getElementById('alphabet-toggle-cyrillic').classList.toggle('hidden', !isCyrillic);
+
+    // Sonuç sayfasındaki metni günceller
+    if (lastSelectedWord) {
+        showResult(lastSelectedWord);
+    }
+}
+
+// Eşleşen sözcükler için öneri listesini görüntüler.
 function displaySuggestions(matches, query) {
     const suggestionsDiv = document.getElementById('suggestions');
     suggestionsDiv.innerHTML = '';
@@ -130,7 +165,7 @@ function displaySuggestions(matches, query) {
         suggestion.addEventListener('mousedown', (e) => {
             e.preventDefault();
             selectWord(match.data);
-            document.getElementById('searchInput').focus();
+            document.getElementById('searchInput').focus(); // Arama kutusunun odaklanmasını korur
         });
         suggestionsDiv.appendChild(suggestion);
     });
@@ -138,6 +173,7 @@ function displaySuggestions(matches, query) {
     suggestionsContainer.classList.remove('hidden');
 }
 
+// Bir sözcük seçildiğinde sonuçları gösterir ve geçmişi günceller.
 function selectWord(word) {
     lastSelectedWord = word;
     document.getElementById('searchInput').value = word.Sözcük;
@@ -147,27 +183,43 @@ function selectWord(word) {
     updateSearchHistory(word.Sözcük);
 }
 
+// Seçilen sözcüğün detaylarını ekranda görüntüler.
 function showResult(word) {
     const resultDiv = document.getElementById('result');
+    
+    // Geçici olarak bir HTML oluşturur ve isCyrillic durumuna göre metni günceller.
+    let wordToDisplay = word.Sözcük;
+    let synonymsToDisplay = word['Eş Anlamlılar'] || 'Bulunmamaktadır.';
+    let descriptionToDisplay = word.Açıklama || 'Açıklama bulunmamaktadır.';
+    let originToDisplay = word.Öz || 'Köken bilgisi bulunmamaktadır.';
+
+    if (isCyrillic) {
+      // Harf karşılıklarını bana gönderdiğinizde bu kısım güncellenecektir.
+      // Şimdilik sadece örnek bir dönüşüm gösterelim
+      wordToDisplay = wordToDisplay.replace(/S/g, 'Σ').replace(/s/g, 'σ');
+      synonymsToDisplay = synonymsToDisplay.replace(/S/g, 'Σ').replace(/s/g, 'σ');
+    }
+
     resultDiv.innerHTML = `
         <div class="bg-subtle-light dark:bg-subtle-dark rounded-lg sm:rounded-xl overflow-hidden p-4 sm:p-6">
-            <h2 class="text-2xl font-bold mb-4">${word.Sözcük}</h2>
+            <h2 class="text-2xl font-bold mb-4">${wordToDisplay}</h2>
             <div class="mb-4">
                 <span class="font-semibold text-lg">Eş Anlamlılar:</span>
-                <span class="text-muted-light dark:text-muted-dark">${word['Eş Anlamlılar'] || 'Bulunmamaktadır.'}</span>
+                <span class="text-muted-light dark:text-muted-dark">${synonymsToDisplay}</span>
             </div>
             <div class="mb-4">
                 <span class="font-semibold text-lg">Açıklama:</span>
-                <p class="text-base">${word.Açıklama || 'Açıklama bulunmamaktadır.'}</p>
+                <p class="text-base">${descriptionToDisplay}</p>
             </div>
             <div>
                 <span class="font-semibold text-lg">Köken:</span>
-                <p class="text-base">${word.Öz || 'Köken bilgisi bulunmamaktadır.'}</p>
+                <p class="text-base">${originToDisplay}</p>
             </div>
         </div>
     `;
 }
 
+// Arama kutusunu ve sonuçları temizler.
 function clearResult() {
     document.getElementById('result').innerHTML = '';
     document.getElementById('searchInput').value = '';
@@ -175,75 +227,7 @@ function clearResult() {
     displaySearchHistory();
 }
 
+// Arama geçmişini localStorage'da günceller.
 function updateSearchHistory(query) {
     const historyIndex = searchHistory.indexOf(query);
-    if (historyIndex > -1) {
-        searchHistory.splice(historyIndex, 1);
-    }
-    searchHistory.unshift(query);
-
-    if (searchHistory.length > 12) {
-        searchHistory.pop();
-    }
-    localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
-}
-
-function displaySearchHistory() {
-    const suggestionsDiv = document.getElementById('suggestions');
-    const suggestionsContainer = document.getElementById('suggestions-container');
-    const searchInput = document.getElementById('searchInput');
-
-    if (searchInput === document.activeElement && !searchInput.value.trim() && searchHistory.length > 0) {
-        suggestionsDiv.innerHTML = '';
-        searchHistory.slice(0, 12).forEach(history => {
-            const suggestion = document.createElement('div');
-            suggestion.className = 'suggestion cursor-pointer p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors border-b border-subtle-light dark:border-subtle-dark last:border-b-0';
-            suggestion.innerHTML = `<span class="font-bold">${history}</span>`;
-
-            suggestion.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                const selectedWord = allWords.find(row => row.Sözcük === history);
-                if (selectedWord) selectWord(selectedWord);
-            });
-            suggestionsDiv.appendChild(suggestion);
-        });
-        suggestionsContainer.classList.remove('hidden');
-    }
-}
-
-function toggleFeedbackForm() {
-    const feedbackModal = document.getElementById('feedbackModal');
-    feedbackModal.classList.toggle('hidden');
-}
-
-function submitFeedback() {
-    const feedbackText = document.getElementById('feedbackText').value.trim();
-    if (!feedbackText) {
-        alert('Lütfen geri bildirim yazın.');
-        return;
-    }
-
-    const tarih = new Date().toLocaleString('tr-TR');
-
-    fetch('https://sheetdb.io/api/v1/mt09gl0tun8di', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { "Tarih": tarih, "Mesaj": feedbackText } })
-    })
-        .then(response => response.json())
-        .then(() => {
-            alert('Geri bildiriminiz alındı, teşekkür ederiz!');
-            toggleFeedbackForm();
-        })
-        .catch(error => {
-            console.error('Geri bildirim gönderilirken hata oluştu:', error);
-            alert('Bir hata oluştu, lütfen tekrar deneyin.');
-        });
-}
-
-function toggleMobileMenu() {
-    const mobileMenu = document.getElementById('mobile-menu');
-    mobileMenu.classList.toggle('hidden');
-}
-
-fetchWords();
+    if (historyIndex > -1)
