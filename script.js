@@ -27,7 +27,6 @@ function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     const suggestionsDiv = document.getElementById('suggestions');
     const resultDiv = document.getElementById('result');
-    const feedbackForm = document.getElementById('feedbackForm');
 
     // Sayfa yüklendiğinde geçmiş aramaları göster
     displaySearchHistory();
@@ -40,17 +39,8 @@ function setupSearch() {
             suggestionsDiv.innerHTML = '';
             // Arama kutusu boşken sonuç div'ini temizle
             resultDiv.innerHTML = '';
-            // Geri bildirim formu gizli değilse, onu da gizle
-            if (feedbackForm.style.display !== 'none') {
-                toggleFeedbackForm();
-            }
             displaySearchHistory();
             return;
-        }
-
-        // Arama yapıldığında geri bildirim formunu gizle
-        if (feedbackForm.style.display !== 'none') {
-            toggleFeedbackForm();
         }
 
         const matches = [];
@@ -205,16 +195,8 @@ function displaySearchHistory() {
 }
 
 function toggleFeedbackForm() {
-    const feedbackForm = document.getElementById('feedbackForm');
-    const isHidden = feedbackForm.classList.contains('hidden');
-    if (isHidden) {
-        feedbackForm.classList.remove('hidden');
-        document.getElementById('searchInput').disabled = true;
-    } else {
-        feedbackForm.classList.add('hidden');
-        document.getElementById('searchInput').disabled = false;
-        document.getElementById('feedbackText').value = ''; // Metin kutusunu temizle
-    }
+    const feedbackModal = document.getElementById('feedbackModal');
+    feedbackModal.classList.toggle('hidden');
 }
 
 function submitFeedback() {
