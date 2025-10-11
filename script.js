@@ -9,7 +9,42 @@ function normalizeString(str) {
 let allWords = [];
 let lastSelectedWord = null;
 let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
-let isCyrillic = false; // Alfabenin başlangıç durumu (Latin)
+let isGreek = false; // Alfabenin başlangıç durumu (Latin)
+
+// Harf dönüşüm eşleşmelerini burada tanımlayalım.
+const latinToGreekMap = {
+    "a":"Α","A":"Α",
+    "e":"Ε","E":"Ε",
+    "i":"Ͱ","İ":"Ͱ",
+    "n":"Ν","N":"Ν",
+    "r":"Ρ","R":"Ρ",
+    "l":"L","L":"L",
+    "ı":"Ь","I":"Ь",
+    "k":"Κ","K":"Κ",
+    "d":"D","D":"D",
+    "m":"Μ","M":"Μ",
+    "t":"Τ","T":"Τ",
+    "y":"J","Y":"J",
+    "s":"Σ","S":"Σ",
+    "u":"Υ","U":"Υ",
+    "o":"Ϙ","O":"Ϙ",
+    "b":"Β","B":"Β",
+    "ş":"Ш","Ş":"Ш",
+    "ü":"U","Ü":"U",
+    "z":"Ζ","Z":"Ζ",
+    "g":"Γ","G":"Γ",
+    "ç":"C","Ç":"C",
+    "ğ":"R","Ğ":"R",
+    "v":"F","V":"F",
+    "c":"G","C":"G",
+    "h":"Η","H":"Η",
+    "p":"Π","P":"Π",
+    "ö":"Ω","Ö":"Ω",
+    "f":"V","F":"V",
+    "x":"Ψ","X":"Ψ",
+    "j":"Ϸ","J":"Ϸ"
+};
+
 
 // Google Sheets'ten verileri çeker.
 async function fetchWords() {
@@ -48,6 +83,7 @@ function showPage(pageId) {
         aboutContent.classList.remove('hidden');
     }
 }
+
 
 // Arama kutusu ve önerilerle ilgili olay dinleyicilerini kurar.
 function setupSearch() {
@@ -118,14 +154,12 @@ function setupAlphabetToggle() {
 }
 
 // Harfleri değiştirme fonksiyonu
-// NOT: Bu fonksiyon, harf eşleştirmelerinizi beklemektedir.
-// Karşılıkları gönderdiğinizde bu fonksiyonu tamamlayabilirim.
 function toggleAlphabet() {
-    isCyrillic = !isCyrillic;
+    isGreek = !isGreek;
     
     // Simgeyi değiştirir
-    document.getElementById('alphabet-toggle-latin').classList.toggle('hidden', isCyrillic);
-    document.getElementById('alphabet-toggle-cyrillic').classList.toggle('hidden', !isCyrillic);
+    document.getElementById('alphabet-toggle-latin').classList.toggle('hidden', isGreek);
+    document.getElementById('alphabet-toggle-cyrillic').classList.toggle('hidden', !isGreek);
 
     // Sonuç sayfasındaki metni günceller
     if (lastSelectedWord) {
@@ -153,12 +187,20 @@ function displaySuggestions(matches, query) {
         const suggestion = document.createElement('div');
         suggestion.className = 'suggestion cursor-pointer p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors border-b border-subtle-light dark:border-subtle-dark last:border-b-0';
 
+        let wordToDisplay = match.type === 'main' ? match.word : match.synonym;
+        let mainWordToDisplay = match.type === 'synonym' ? match.main : '';
+
+        if (isGreek) {
+            wordToDisplay = convertToGreek(wordToDisplay);
+            mainWordToDisplay = convertToGreek(mainWordToDisplay);
+        }
+
         if (match.type === 'main') {
-            suggestion.innerHTML = `<span class="font-bold">${match.word}</span>`;
+            suggestion.innerHTML = `<span class="font-bold">${wordToDisplay}</span>`;
         } else {
             suggestion.innerHTML = `
-                <span class="font-bold">${match.synonym}</span>
-                <span class="text-muted-light dark:text-muted-dark ml-2 text-sm">${match.main}</span>
+                <span class="font-bold">${wordToDisplay}</span>
+                <span class="text-muted-light dark:text-muted-dark ml-2 text-sm">${mainWordToDisplay}</span>
             `;
         }
 
@@ -187,17 +229,16 @@ function selectWord(word) {
 function showResult(word) {
     const resultDiv = document.getElementById('result');
     
-    // Geçici olarak bir HTML oluşturur ve isCyrillic durumuna göre metni günceller.
     let wordToDisplay = word.Sözcük;
     let synonymsToDisplay = word['Eş Anlamlılar'] || 'Bulunmamaktadır.';
     let descriptionToDisplay = word.Açıklama || 'Açıklama bulunmamaktadır.';
     let originToDisplay = word.Öz || 'Köken bilgisi bulunmamaktadır.';
 
-    if (isCyrillic) {
-      // Harf karşılıklarını bana gönderdiğinizde bu kısım güncellenecektir.
-      // Şimdilik sadece örnek bir dönüşüm gösterelim
-      wordToDisplay = wordToDisplay.replace(/S/g, 'Σ').replace(/s/g, 'σ');
-      synonymsToDisplay = synonymsToDisplay.replace(/S/g, 'Σ').replace(/s/g, 'σ');
+    if (isGreek) {
+      wordToDisplay = convertToGreek(wordToDisplay);
+      synonymsToDisplay = convertToGreek(synonymsToDisplay);
+      descriptionToDisplay = convertToGreek(descriptionToDisplay);
+      originToDisplay = convertToGreek(originToDisplay);
     }
 
     resultDiv.innerHTML = `
@@ -230,4 +271,108 @@ function clearResult() {
 // Arama geçmişini localStorage'da günceller.
 function updateSearchHistory(query) {
     const historyIndex = searchHistory.indexOf(query);
-    if (historyIndex > -1)
+    if (historyIndex > -1) {
+        searchHistory.splice(historyIndex, 1);
+    }
+    searchHistory.unshift(query);
+
+    if (searchHistory.length > 12) {
+        searchHistory.pop();
+    }
+    localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+}
+
+// Arama geçmişini öneri listesi olarak görüntüler.
+function displaySearchHistory() {
+    const suggestionsDiv = document.getElementById('suggestions');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    const searchInput = document.getElementById('searchInput');
+
+    if (searchInput === document.activeElement && !searchInput.value.trim() && searchHistory.length > 0) {
+        suggestionsDiv.innerHTML = '';
+        searchHistory.slice(0, 12).forEach(history => {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'suggestion cursor-pointer p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors border-b border-subtle-light dark:border-subtle-dark last:border-b-0';
+            
+            let historyToDisplay = isGreek ? convertToGreek(history) : history;
+
+            suggestion.innerHTML = `<span class="font-bold">${historyToDisplay}</span>`;
+
+            suggestion.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const selectedWord = allWords.find(row => row.Sözcük === history);
+                if (selectedWord) selectWord(selectedWord);
+            });
+            suggestionsDiv.appendChild(suggestion);
+        });
+        suggestionsContainer.classList.remove('hidden');
+    }
+}
+
+// Geri bildirim modalını gösterir veya gizler.
+function toggleFeedbackForm() {
+    const feedbackModal = document.getElementById('feedbackModal');
+    feedbackModal.classList.toggle('hidden');
+}
+
+// Geri bildirim verilerini SheetDB'ye gönderir.
+function submitFeedback() {
+    const feedbackText = document.getElementById('feedbackText').value.trim();
+    if (!feedbackText) {
+        alert('Lütfen geri bildirim yazın.');
+        return;
+    }
+
+    const tarih = new Date().toLocaleString('tr-TR');
+
+    fetch('https://sheetdb.io/api/v1/mt09gl0tun8di', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { "Tarih": tarih, "Mesaj": feedbackText } })
+    })
+        .then(response => response.json())
+        .then(() => {
+            alert('Geri bildiriminiz alındı, teşekkür ederiz!');
+            toggleFeedbackForm();
+        })
+        .catch(error => {
+            console.error('Geri bildirim gönderilirken hata oluştu:', error);
+            alert('Bir hata oluştu, lütfen tekrar deneyin.');
+        });
+}
+
+// Mobil menüyü gösterir veya gizler.
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenu.classList.toggle('hidden');
+}
+
+// Metni Rum alfabesine dönüştürme fonksiyonu
+function convertToGreek(text) {
+    if (!text) return '';
+    let convertedText = '';
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        let found = false;
+        // İki harfli eşleşmeleri kontrol et
+        if (i + 1 < text.length) {
+            const twoChar = char + text[i + 1];
+            if (latinToGreekMap[twoChar]) {
+                convertedText += latinToGreekMap[twoChar];
+                i++; // İki karakter ilerle
+                found = true;
+            }
+        }
+        // Eğer iki harfli eşleşme bulunamazsa tek harf eşleşmeyi kontrol et
+        if (!found) {
+            if (latinToGreekMap[char]) {
+                convertedText += latinToGreekMap[char];
+            } else {
+                convertedText += char;
+            }
+        }
+    }
+    return convertedText;
+}
+
+fetchWords();
