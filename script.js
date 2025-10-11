@@ -143,7 +143,7 @@ function setupSearch() {
 
     searchInput.addEventListener('input', function () {
         const rawQuery = this.value.trim();
-        const query = normalizeString(rawQuery); // Doğrudan normalize et, dönüştürme yapma
+        const query = normalizeString(rawQuery);
 
         if (!query) {
             suggestionsDiv.innerHTML = '';
@@ -310,26 +310,32 @@ function showResult(word) {
 
             ${descriptionToDisplay ? `
             <div class="mb-4">
-                <span class="font-bold text-lg">${descriptionTitle}:</span>
+                <span class="font-bold text-lg">${descriptionTitle}</span>
                 <p class="text-base mt-1">${descriptionToDisplay}</p>
             </div>` : ''}
 
+            <hr class="border-t border-subtle-light dark:border-subtle-dark my-4">
+
             ${etymologyToDisplay ? `
             <div class="mb-4">
-                <span class="font-bold text-lg">${etymologyTitle}:</span>
+                <span class="font-bold text-lg">${etymologyTitle}</span>
                 <p class="text-base mt-1">${etymologyToDisplay}</p>
             </div>` : ''}
 
-            ${synonymsToDisplay ? `
-            <div class="mb-4">
-                <span class="font-bold text-lg">${synonymsTitle}:</span>
-                <p class="text-base mt-1">${synonymsToDisplay}</p>
-            </div>` : ''}
+            <hr class="border-t border-subtle-light dark:border-subtle-dark my-4">
 
             ${exampleToDisplay ? `
-            <div>
-                <span class="font-bold text-lg">${exampleTitle}:</span>
+            <div class="mb-4">
+                <span class="font-bold text-lg">${exampleTitle}</span>
                 <p class="text-base mt-1">${exampleToDisplay}</p>
+            </div>` : ''}
+
+            <hr class="border-t border-subtle-light dark:border-subtle-dark my-4">
+
+            ${synonymsToDisplay ? `
+            <div class="mb-4">
+                <span class="font-bold text-lg">${synonymsTitle}</span>
+                <p class="text-base mt-1">${synonymsToDisplay}</p>
             </div>` : ''}
         </div>
     `;
