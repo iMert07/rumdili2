@@ -45,14 +45,6 @@ const latinToGreekMap = {
     "j":"Ϸ","J":"Ϸ"
 };
 
-// Yunan alfabesinden Latin alfabesine dönüşüm için ters eşleşme haritası oluştur.
-const greekToLatinMap = {};
-for (const key in latinToGreekMap) {
-    const value = latinToGreekMap[key];
-    greekToLatinMap[value.toLocaleLowerCase('tr-TR')] = key.toLocaleLowerCase('tr-TR');
-    greekToLatinMap[value.toLocaleUpperCase('tr-TR')] = key.toLocaleLowerCase('tr-TR');
-}
-
 const translations = {
     'tr': {
         'title': 'RUM DİLİ',
