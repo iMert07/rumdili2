@@ -60,8 +60,8 @@
                             <h1 class="text-xl font-bold cursor-pointer" onclick="showPage('home')">RUM DİLİ</h1>
                         </div>
                         <nav class="hidden md:flex items-center gap-8">
-                            <a class="text-base font-medium hover:text-primary transition-colors cursor-pointer" onclick="showPage('about')">Hakkında</a>
-                            <a class="text-base font-medium hover:text-primary transition-colors cursor-pointer" onclick="toggleFeedbackForm()">Geri Bildirim</a>
+                            <a class="text-base font-medium hover:text-primary transition-colors cursor-pointer" onclick="showPage('about')" data-key="about_page_text">Hakkında</a>
+                            <a class="text-base font-medium hover:text-primary transition-colors cursor-pointer" onclick="toggleFeedbackForm()" data-key="feedback_button_text">Geri Bildirim</a>
                         </nav>
                     </div>
                     <div class="flex items-center gap-2">
@@ -94,8 +94,8 @@
                 </div>
             </div>
             <div id="mobile-menu" class="md:hidden hidden bg-subtle-light dark:bg-subtle-dark border-b border-subtle-light dark:border-subtle-dark py-2 px-4">
-                <a class="block text-base font-medium hover:text-primary transition-colors cursor-pointer px-4 py-2" onclick="showPage('about'); toggleMobileMenu();">Hakkında</a>
-                <a class="block text-base font-medium hover:text-primary transition-colors cursor-pointer px-4 py-2" onclick="toggleFeedbackForm(); toggleMobileMenu();">Geri Bildirim</a>
+                <a class="block text-base font-medium hover:text-primary transition-colors cursor-pointer px-4 py-2" onclick="showPage('about'); toggleMobileMenu();" data-key="about_page_text">Hakkında</a>
+                <a class="block text-base font-medium hover:text-primary transition-colors cursor-pointer px-4 py-2" onclick="toggleFeedbackForm(); toggleMobileMenu();" data-key="feedback_button_text">Geri Bildirim</a>
             </div>
         </header>
 
@@ -107,7 +107,7 @@
                             <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
                         </svg>
                     </div>
-                    <input class="w-full h-14 sm:h-16 pl-10 sm:pl-14 pr-4 text-base sm:text-lg bg-subtle-light dark:bg-subtle-dark border-0 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-foreground-light dark:placeholder:text-foreground-dark font-semibold" id="searchInput" placeholder="SÖZCÜK ARA..." type="search" autocomplete="off"/>
+                    <input class="w-full h-14 sm:h-16 pl-10 sm:pl-14 pr-4 text-base sm:text-lg bg-subtle-light dark:bg-subtle-dark border-0 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-foreground-light dark:placeholder:text-foreground-dark font-semibold" id="searchInput" placeholder="SÖZCÜK ARA..." type="search" autocomplete="off" data-key="search_placeholder">
                     <div id="suggestions-container" class="absolute top-full left-0 right-0 z-10 mt-2 rounded-lg sm:rounded-xl bg-subtle-light dark:bg-subtle-dark border border-subtle-light dark:border-subtle-dark shadow-lg hidden">
                         <div id="suggestions" class="max-h-[20rem] overflow-y-auto p-2"></div>
                     </div>
@@ -117,12 +117,12 @@
 
             <div id="about-content" class="max-w-4xl mx-auto hidden">
                 <div class="bg-subtle-light dark:bg-subtle-dark rounded-lg sm:rounded-xl p-6 sm:p-8">
-                    <h2 class="text-2xl font-bold mb-4">Hakkında</h2>
-                    <p class="text-base text-muted-light dark:text-muted-dark leading-relaxed">
+                    <h2 class="text-2xl font-bold mb-4" data-key="about_title">Hakkında</h2>
+                    <p class="text-base text-muted-light dark:text-muted-dark leading-relaxed" data-key="about_text_1">
                         Bu sözlük, Rum diline ait kelimeleri, açıklamaları ve kökenlerini keşfetmeniz için hazırlanmıştır. Amacımız, Rum dilinin zenginliğini ve kültürel derinliğini daha geniş kitlelere ulaştırmaktır.
                         Veriler, bir Google Sheets tablosundan otomatik olarak çekilerek güncel tutulmaktadır. Kullanıcı arayüzü modern ve duyarlı bir tasarım sunmak için Tailwind CSS kullanılarak oluşturulmuştur.
                     </p>
-                    <p class="text-base text-muted-light dark:text-muted-dark leading-relaxed mt-4">
+                    <p class="text-base text-muted-light dark:text-muted-dark leading-relaxed mt-4" data-key="about_text_2">
                         Herhangi bir geri bildiriminiz, öneriniz veya yeni sözcük ekleme isteğiniz varsa, lütfen yukarıdaki menüden "Geri Bildirim" butonunu kullanarak bize ulaşın. Katkılarınızla bu sözlüğü daha da zenginleştirebiliriz!
                     </p>
                 </div>
@@ -135,11 +135,11 @@
             <button class="absolute top-4 right-4 p-2 rounded-full hover:bg-background-light dark:hover:bg-background-dark transition-colors" onclick="toggleFeedbackForm()">
                 <svg class="w-6 h-6 text-muted-light dark:text-muted-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <h2 class="text-2xl font-bold mb-4">Geri Bildirim</h2>
-            <textarea id="feedbackText" class="w-full h-40 p-3 bg-background-light dark:bg-background-dark border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-muted-light dark:placeholder:text-muted-dark" placeholder="Geri bildiriminizi buraya yazın..."></textarea>
+            <h2 class="text-2xl font-bold mb-4" data-key="feedback_title">Geri Bildirim</h2>
+            <textarea id="feedbackText" class="w-full h-40 p-3 bg-background-light dark:bg-background-dark border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-muted-light dark:placeholder:text-muted-dark" placeholder="Geri bildiriminizi buraya yazın..." data-key="feedback_placeholder"></textarea>
             <div class="flex justify-end gap-2 mt-4">
-                <button class="px-4 py-2 rounded-lg sm:rounded-xl bg-muted-light text-foreground-light dark:bg-muted-dark dark:text-foreground-dark hover:bg-muted-dark hover:text-white transition-colors" onclick="toggleFeedbackForm()">İptal</button>
-                <button class="px-4 py-2 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/80 transition-colors" onclick="submitFeedback()">Gönder</button>
+                <button class="px-4 py-2 rounded-lg sm:rounded-xl bg-muted-light text-foreground-light dark:bg-muted-dark dark:text-foreground-dark hover:bg-muted-dark hover:text-white transition-colors" onclick="toggleFeedbackForm()" data-key="feedback_cancel">İptal</button>
+                <button class="px-4 py-2 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/80 transition-colors" onclick="submitFeedback()" data-key="feedback_send">Gönder</button>
             </div>
         </div>
     </div>
