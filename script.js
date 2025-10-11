@@ -15,8 +15,8 @@ let isGreek = false; // Alfabenin başlangıç durumu (Latin)
 const latinToGreekMap = {
     "a":"Α","A":"Α",
     "e":"Ε","E":"Ε",
-    "i":"Ͱ","İ":"Ͱ",
-    "ı":"Ь","I":"Ь",
+    "i":"Ͱ","I":"Ͱ", // i ve İ farklı
+    "ı":"Ь","İ":"Ь", // ı ve I farklı
     "n":"Ν","N":"Ν",
     "r":"Ρ","R":"Ρ",
     "l":"L","L":"L",
@@ -143,7 +143,7 @@ function setupSearch() {
 
     searchInput.addEventListener('input', function () {
         const rawQuery = this.value.trim();
-        const query = normalizeString(rawQuery);
+        const query = normalizeString(rawQuery); // Doğrudan normalize et, dönüştürme yapma
 
         if (!query) {
             suggestionsDiv.innerHTML = '';
@@ -159,8 +159,7 @@ function setupSearch() {
             const synonyms = row['Eş Anlamlılar']
                 ? row['Eş Anlamlılar'].split(',').map(s => s.trim())
                 : [];
-            
-            // Eğer kelime veya eş anlamlısı sorguyla başlıyorsa eşleştirme yap
+
             if (mainNorm.startsWith(query)) {
                 matches.push({ type: 'main', word: mainWord, data: row });
             } else {
@@ -280,12 +279,12 @@ function selectWord(word) {
 function showResult(word) {
     const resultDiv = document.getElementById('result');
     
-    let wordToDisplay = word.Sözcük;
+    let wordToDisplay = word.Sözcük || '';
     let synonymsToDisplay = word['Eş Anlamlılar'] || '';
     let descriptionToDisplay = word.Açıklama || '';
     let typeToDisplay = word.Tür || '';
     let exampleToDisplay = word.Örnek || '';
-    let originToDisplay = word.Köken || '';
+    let etymologyToDisplay = word.Köken || '';
 
     if (isGreek) {
       wordToDisplay = convertToGreek(wordToDisplay);
@@ -293,7 +292,7 @@ function showResult(word) {
       descriptionToDisplay = convertToGreek(descriptionToDisplay);
       typeToDisplay = convertToGreek(typeToDisplay);
       exampleToDisplay = convertToGreek(exampleToDisplay);
-      originToDisplay = convertToGreek(originToDisplay);
+      etymologyToDisplay = convertToGreek(etymologyToDisplay);
     }
 
     const synonymsTitle = isGreek ? convertToGreek(translations.tr.synonyms_title) : translations.tr.synonyms_title;
@@ -304,31 +303,33 @@ function showResult(word) {
 
     resultDiv.innerHTML = `
         <div class="bg-subtle-light dark:bg-subtle-dark rounded-lg sm:rounded-xl overflow-hidden p-4 sm:p-6">
-            <h2 class="text-2xl font-bold mb-4">${wordToDisplay}</h2>
-            ${synonymsToDisplay ? `
-            <div class="mb-4">
-                <span class="font-semibold text-lg">${synonymsTitle}:</span>
-                <span class="text-muted-light dark:text-muted-dark">${synonymsToDisplay}</span>
-            </div>` : ''}
+            <h2 class="text-3xl font-bold mb-4">${wordToDisplay}</h2>
+            ${typeToDisplay ? `<p class="text-sm text-muted-light dark:text-muted-dark mb-4">${typeToDisplay}</p>` : ''}
+            
+            <hr class="border-t border-subtle-light dark:border-subtle-dark my-4">
+
             ${descriptionToDisplay ? `
             <div class="mb-4">
-                <span class="font-semibold text-lg">${descriptionTitle}:</span>
-                <p class="text-base">${descriptionToDisplay}</p>
+                <span class="font-bold text-lg">${descriptionTitle}:</span>
+                <p class="text-base mt-1">${descriptionToDisplay}</p>
             </div>` : ''}
-            ${typeToDisplay ? `
+
+            ${etymologyToDisplay ? `
             <div class="mb-4">
-                <span class="font-semibold text-lg">${typeTitle}:</span>
-                <span class="text-muted-light dark:text-muted-dark">${typeToDisplay}</span>
+                <span class="font-bold text-lg">${etymologyTitle}:</span>
+                <p class="text-base mt-1">${etymologyToDisplay}</p>
             </div>` : ''}
+
+            ${synonymsToDisplay ? `
+            <div class="mb-4">
+                <span class="font-bold text-lg">${synonymsTitle}:</span>
+                <p class="text-base mt-1">${synonymsToDisplay}</p>
+            </div>` : ''}
+
             ${exampleToDisplay ? `
-            <div class="mb-4">
-                <span class="font-semibold text-lg">${exampleTitle}:</span>
-                <p class="text-base">${exampleToDisplay}</p>
-            </div>` : ''}
-            ${originToDisplay ? `
             <div>
-                <span class="font-semibold text-lg">${etymologyTitle}:</span>
-                <p class="text-base">${originToDisplay}</p>
+                <span class="font-bold text-lg">${exampleTitle}:</span>
+                <p class="text-base mt-1">${exampleToDisplay}</p>
             </div>` : ''}
         </div>
     `;
