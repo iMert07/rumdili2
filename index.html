@@ -65,8 +65,9 @@
                         </nav>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark transition-colors hidden md:block" onclick="toggleFeedbackForm()">
-                            <svg class="w-6 h-6 text-muted-light dark:text-muted-dark" fill="currentColor" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-4,116a4,4,0,0,1-4,4H88a4,4,0,0,1,0-8h32a4,4,0,0,1,4,4Zm20.87-43.25a32,32,0,0,0-58.28-21.75c-.39-.77-4.22-6.57-2.61-9a10.83,10.83,0,0,1,2.83-4.13,32.32,32.32,0,0,1,41.22-4.16,33.51,33.51,0,0,1,16.84,18.72l-.76.76c-1.5,1.5-3,3.33-4.5,5.16-1.5,1.83-3,3.66-4.5,5.49a4,4,0,0,1-6.6-4.52l.76-.76a25.33,25.33,0,0,0-13.3-14.86,24.3,24.3,0,0,0-30.85,3A24.23,24.23,0,0,0,105.75,93a24.1,24.1,0,0,0,11.3,16.89,4,4,0,0,1,1.88,4.72,4,4,0,0,1-4.72,1.88Z"></path></svg>
+                        <button class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark transition-colors" id="alphabet-toggle">
+                            <span id="alphabet-toggle-latin" class="w-6 h-6 text-lg font-bold">Σ</span>
+                            <span id="alphabet-toggle-cyrillic" class="w-6 h-6 text-lg font-bold hidden">S</span>
                         </button>
                         <button class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark transition-colors" id="theme-toggle">
                             <svg class="w-6 h-6 text-muted-light dark:text-muted-dark hidden" fill="currentColor" id="theme-toggle-dark-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
@@ -81,10 +82,6 @@
                                 <line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
                                 <line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
                             </svg>
-                        </button>
-                        <button class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark transition-colors" id="alphabet-toggle">
-                            <span id="alphabet-toggle-latin" class="w-6 h-6 text-lg font-bold">S</span>
-                            <span id="alphabet-toggle-cyrillic" class="w-6 h-6 text-lg font-bold hidden">Σ</span>
                         </button>
                         <button class="md:hidden p-2 rounded-md hover:bg-subtle-light dark:hover:bg-subtle-dark transition-colors" onclick="toggleMobileMenu()">
                             <svg class="w-6 h-6 text-muted-light dark:text-muted-dark" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
