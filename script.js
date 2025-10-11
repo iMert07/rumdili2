@@ -16,12 +16,32 @@ async function fetchWords() {
         const response = await fetch(url);
         allWords = await response.json();
         setupSearch();
+        showPage('about'); // Sayfa yüklendiğinde "Hakkında" sayfasını göster
     } catch (error) {
         console.error('VERİ ÇEKME HATASI:', error);
         document.getElementById('result').innerHTML =
             '<p style="color: red;">VERİLER YÜKLENİRKEN HATA OLUŞTU. LÜTFEN SAYFAYI YENİLEYİN.</p>';
     }
 }
+
+function showPage(pageId) {
+    const homeContent = document.getElementById('home-content');
+    const aboutContent = document.getElementById('about-content');
+    const searchInput = document.getElementById('searchInput');
+
+    homeContent.classList.add('hidden');
+    aboutContent.classList.add('hidden');
+
+    if (pageId === 'home') {
+        homeContent.classList.remove('hidden');
+        searchInput.disabled = false;
+        clearResult();
+    } else if (pageId === 'about') {
+        aboutContent.classList.remove('hidden');
+        searchInput.disabled = true;
+    }
+}
+
 
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
