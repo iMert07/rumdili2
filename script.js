@@ -45,8 +45,16 @@ const latinToGreekMap = {
     "j":"Ϸ","J":"Ϸ"
 };
 
+// Yunan alfabesinden Latin alfabesine dönüşüm için ters eşleşme haritası oluştur.
+const greekToLatinMap = {};
+for (const key in latinToGreekMap) {
+    const value = latinToGreekMap[key];
+    greekToLatinMap[value] = key;
+}
+
 const translations = {
     'tr': {
+        'title': 'RUM DİLİ',
         'about_page_text': 'Hakkında',
         'feedback_button_text': 'Geri Bildirim',
         'search_placeholder': 'SÖZCÜK ARA...',
@@ -141,7 +149,14 @@ function setupSearch() {
 
     searchInput.addEventListener('input', function () {
         const rawQuery = this.value.trim();
-        const query = normalizeString(rawQuery);
+        let query;
+
+        // Yunan alfabesi modundaysa, metni Latin'e dönüştürerek ara
+        if (isGreek) {
+            query = normalizeString(convertToLatin(rawQuery));
+        } else {
+            query = normalizeString(rawQuery);
+        }
 
         if (!query) {
             suggestionsDiv.innerHTML = '';
@@ -210,6 +225,8 @@ function toggleAlphabet() {
     if (lastSelectedWord) {
         showResult(lastSelectedWord);
     }
+    // Arama geçmişini günceller
+    displaySearchHistory();
 }
 
 // Eşleşen sözcükler için öneri listesini görüntüler.
@@ -401,15 +418,22 @@ function toggleMobileMenu() {
 function convertToGreek(text) {
     if (!text) return '';
     let convertedText = '';
-    // Bu kısım, dönüşüm için gerekli eşleşmeleri içerir.
     for (let char of text) {
-        const lowerChar = char.toLowerCase();
-        const upperChar = char.toUpperCase();
-        if (latinToGreekMap[char]) {
-            convertedText += latinToGreekMap[char];
-        } else {
-            convertedText += char;
-        }
+        const latinChar = char;
+        const greekChar = latinToGreekMap[latinChar];
+        convertedText += greekChar || latinChar;
+    }
+    return convertedText;
+}
+
+// Metni Latin alfabesine dönüştürme fonksiyonu
+function convertToLatin(text) {
+    if (!text) return '';
+    let convertedText = '';
+    for (let char of text) {
+        const greekChar = char;
+        const latinChar = greekToLatinMap[greekChar];
+        convertedText += latinChar || greekChar;
     }
     return convertedText;
 }
