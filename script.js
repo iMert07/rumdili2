@@ -1,3 +1,4 @@
+
 // Dizeleri standart bir formata dönüştürür (küçük harfe çevirme gibi).
 // Bu, arama ve eşleştirme işlemlerinin daha tutarlı olmasını sağlar.
 function normalizeString(str) {
@@ -15,8 +16,8 @@ let isGreek = false; // Alfabenin başlangıç durumu (Latin)
 const latinToGreekMap = {
     "a":"Α","A":"Α",
     "e":"Ε","E":"Ε",
-    "i":"Ͱ","I":"Ͱ", // i ve İ farklı
-    "ı":"Ь","İ":"Ь", // ı ve I farklı
+    "i":"Ͱ","İ":"Ͱ",
+    "ı":"Ь","I":"Ь",
     "n":"Ν","N":"Ν",
     "r":"Ρ","R":"Ρ",
     "l":"L","L":"L",
@@ -47,13 +48,13 @@ const latinToGreekMap = {
 
 const translations = {
     'tr': {
-        'title': 'RUM DİLİ',
+        'title': 'Rum Dili',
         'about_page_text': 'Hakkında',
         'feedback_button_text': 'Geri Bildirim',
-        'search_placeholder': 'SÖZCÜK ARA...',
+        'search_placeholder': 'Kelime ara...',
         'about_title': 'Hakkında',
-        'about_text_1': 'Bu sözlük, Rum diline ait kelimeleri, açıklamaları ve kökenlerini keşfetmeniz için hazırlanmıştır. Amacımız, Rum dilinin zenginliğini ve kültürel derinliğini daha geniş kitlelere ulaştırmaktır. Veriler, bir Google Sheets tablosundan otomatik olarak çekilerek güncel tutulmaktadır. Kullanıcı arayüzü modern ve duyarlı bir tasarım sunmak için Tailwind CSS kullanılarak oluşturulmuştur.',
-        'about_text_2': 'Herhangi bir geri bildiriminiz, öneriniz veya yeni sözcük ekleme isteğiniz varsa, lütfen yukarıdaki menüden "Geri Bildirim" butonunu kullanarak bize ulaşın. Katkılarınızla bu sözlüğü daha da zenginleştirebiliriz!',
+        'about_text_1': 'Bu sözlük, Rum Diline ait kelimeleri ve kökenlerini keşfetmeniz için hazırlanmıştır. Bu dil Anadolu ve Azerbaycan Türkçelerinin karışımıyla özleştirilmiş ve kolaylaştırılmış yapay bir dildir. Amacım, dilimizin öz zenginliğini kanıtlamaktır.',
+        'about_text_2': 'Herhangi bir geri bildiriminiz, öneriniz veya yeni sözcük ekleme isteğiniz varsa; lütfen yukarıdaki menüden "Geri Bildirim" butonunu kullanarak bana ulaşın. Katkılarınızla bu sözlüğü daha da zenginleştirebiliriz!',
         'feedback_title': 'Geri Bildirim',
         'feedback_placeholder': 'Geri bildiriminizi buraya yazın...',
         'feedback_cancel': 'İptal',
@@ -143,7 +144,7 @@ function setupSearch() {
 
     searchInput.addEventListener('input', function () {
         const rawQuery = this.value.trim();
-        const query = normalizeString(rawQuery);
+        const query = normalizeString(rawQuery); // Doğrudan normalize et, dönüştürme yapma
 
         if (!query) {
             suggestionsDiv.innerHTML = '';
