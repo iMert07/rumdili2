@@ -1,4 +1,3 @@
-
 // Dizeleri standart bir formata dönüştürür (küçük harfe çevirme gibi).
 // Bu, arama ve eşleştirme işlemlerinin daha tutarlı olmasını sağlar.
 function normalizeString(str) {
@@ -160,15 +159,33 @@ function setupSearch() {
             const synonyms = row['Eş Anlamlılar']
                 ? row['Eş Anlamlılar'].split(',').map(s => s.trim())
                 : [];
+            const type = row.Tür || ''; // Tür alanını al
 
+            // 1. Sözcük eşleşmesi
             if (mainNorm.startsWith(query)) {
                 matches.push({ type: 'main', word: mainWord, data: row });
-            } else {
-                synonyms.forEach(syn => {
-                    if (normalizeString(syn).startsWith(query)) {
+                return; // Eğer Sözcük alanında eşleşiyorsa diğerlerini kontrol etmeye gerek yok
+            }
+            
+            // 2. Eş anlamlı kelime eşleşmesi
+            let synonymMatch = false;
+            synonyms.forEach(syn => {
+                if (normalizeString(syn).startsWith(query)) {
+                    // Aynı kelimenin eş anlamlısı zaten eklenmişse tekrar eklememek için kontrol
+                    if (!matches.some(m => m.data === row)) {
                         matches.push({ type: 'synonym', synonym: syn, main: mainWord, data: row });
+                        synonymMatch = true;
                     }
-                });
+                }
+            });
+            if (synonymMatch) return; // Eş anlamlıda eşleştiyse diğerlerini kontrol etmeye gerek yok
+
+            // 3. Yeni: Tür eşleşmesi
+            if (normalizeString(type).startsWith(query)) {
+                // Sözcük veya eş anlamlı kelimede zaten eşleşmemişse ekle
+                 if (!matches.some(m => m.data === row)) {
+                    matches.push({ type: 'type', word: mainWord, typeValue: type, data: row });
+                }
             }
         });
 
@@ -231,24 +248,35 @@ function displaySuggestions(matches, query) {
     }
 
     matches.sort((a, b) => {
-        const aWord = a.type === 'main' ? a.word : a.synonym;
-        const bWord = b.type === 'main' ? b.word : b.synonym;
+        const aWord = a.type === 'main' ? a.word : (a.type === 'synonym' ? a.synonym : a.word); // Sıralama için ana kelimeyi veya eş anlamlıyı kullan
+        const bWord = b.type === 'main' ? b.word : (b.type === 'synonym' ? b.synonym : b.word);
         return normalizeString(aWord).localeCompare(normalizeString(bWord));
     }).slice(0, 12).forEach(match => {
         const suggestion = document.createElement('div');
         suggestion.className = 'suggestion cursor-pointer p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors border-b border-subtle-light dark:border-subtle-dark last:border-b-0';
 
-        let wordToDisplay = match.type === 'main' ? match.word : match.synonym;
+        let wordToDisplay = match.word || (match.type === 'synonym' ? match.synonym : '');
+        let secondaryInfo = '';
         let mainWordToDisplay = match.type === 'synonym' ? match.main : '';
+        
+        // Yeni: Tür eşleşmesi için ikincil bilgiyi ayarla
+        if (match.type === 'type') {
+            secondaryInfo = `(${match.typeValue})`; // Örn: (İsim)
+        }
 
         if (isGreek) {
             wordToDisplay = convertToGreek(wordToDisplay);
             mainWordToDisplay = convertToGreek(mainWordToDisplay);
+            secondaryInfo = convertToGreek(secondaryInfo);
         }
-
-        if (match.type === 'main') {
-            suggestion.innerHTML = `<span class="font-bold">${wordToDisplay}</span>`;
-        } else {
+        
+        // Öneri görünümünü ayarla
+        if (match.type === 'main' || match.type === 'type') {
+            suggestion.innerHTML = `
+                <span class="font-bold">${wordToDisplay}</span>
+                ${secondaryInfo ? `<span class="text-xs text-info-light dark:text-info-dark ml-2">${secondaryInfo}</span>` : ''}
+            `;
+        } else if (match.type === 'synonym') {
             suggestion.innerHTML = `
                 <span class="font-bold">${wordToDisplay}</span>
                 <span class="text-muted-light dark:text-muted-dark ml-2 text-sm">${mainWordToDisplay}</span>
