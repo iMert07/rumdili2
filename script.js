@@ -156,10 +156,16 @@ function setupSearch() {
         allWords.forEach(row => {
             const mainWord = row.Sözcük || '';
             const mainNorm = normalizeString(mainWord);
+            
+            // Eş Anlamlılar: Virgülle ayırıp temizle
             const synonyms = row['Eş Anlamlılar']
                 ? row['Eş Anlamlılar'].split(',').map(s => s.trim())
                 : [];
-            const type = row.Tür || ''; // Tür alanını al
+            
+            // YENİ: Tür: Virgülle ayırıp temizle, bu sayede "İsim, Latince Ad" gibi değerler aranabilir olur.
+            const types = row.Tür
+                ? row.Tür.split(',').map(s => s.trim())
+                : [];
 
             let alreadyMatched = false;
 
@@ -167,25 +173,37 @@ function setupSearch() {
             if (mainNorm.startsWith(query)) {
                 matches.push({ type: 'main', word: mainWord, data: row });
                 alreadyMatched = true;
+                return; // Ana kelime eşleştiyse diğer kontrollere gerek yok.
             }
             
             // 2. Eş anlamlı kelime eşleşmesi
+            let synonymMatch = false;
             synonyms.forEach(syn => {
-                // Eğer ana kelime veya eş anlamlı kelime zaten eşleşmediyse
-                if (normalizeString(syn).startsWith(query) && !alreadyMatched) {
-                    matches.push({ type: 'synonym', synonym: syn, main: mainWord, data: row });
-                    alreadyMatched = true; // Tekrar eklenmesini engelle
+                if (normalizeString(syn).startsWith(query)) {
+                    if (!synonymMatch) { // Sadece ilk eşleşmeyi ekle
+                         matches.push({ type: 'synonym', synonym: syn, main: mainWord, data: row });
+                         synonymMatch = true;
+                         alreadyMatched = true;
+                    }
                 }
             });
-
-            // 3. Tür eşleşmesi
-            if (normalizeString(type).startsWith(query)) {
-                // Sadece daha önce Sözcük veya Eş Anlamlıda eşleşmediyse ekle
-                 if (!alreadyMatched) {
-                    // typeValue, kullanıcının arama yaptığı terimi (örneğin "İsim" veya "camelus") tutacak
-                    matches.push({ type: 'type', word: mainWord, typeValue: type, data: row });
-                }
+            
+            // Eş anlamlıda eşleştiyse, Tür kontrolüne gerek kalmaz.
+            if (alreadyMatched) {
+                return;
             }
+
+            // 3. Tür eşleşmesi (Her bir terimi kontrol et)
+            types.forEach(typeValue => {
+                if (normalizeString(typeValue).startsWith(query)) {
+                    // Sadece daha önce eşleşmediyse ekle
+                     if (!alreadyMatched) {
+                        // typeValue: Kullanıcının arama yaptığı terim (örn: "camelus")
+                        matches.push({ type: 'type', word: mainWord, typeValue: typeValue, data: row });
+                        alreadyMatched = true; // Sadece bir kere eklenmesini sağla
+                    }
+                }
+            });
         });
 
         displaySuggestions(matches, query);
@@ -268,9 +286,9 @@ function displaySuggestions(matches, query) {
             primaryMatchText = match.synonym; 
             secondaryInfo = match.main; // Ana kelime (madde adı)
         } else if (match.type === 'type') {
-            // Tür Araması (İstenen Yeni Mantık): Solda Tür Değeri (Aranan), Sağda Ana Kelime
-            primaryMatchText = match.typeValue; // Örneğin "İsim" veya "camelus"
-            secondaryInfo = match.word;        // Örneğin "Kitap" veya "Deve"
+            // Tür Araması (İstenen Mantık): Solda Tür Değeri (Aranan), Sağda Ana Kelime
+            primaryMatchText = match.typeValue; // Örneğin "camelus" veya "isim"
+            secondaryInfo = match.word;        // Örneğin "Deve" veya "Kitap"
         }
 
 
